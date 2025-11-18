@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FlashThink</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style id="app-style">
+      :root {
+        --primary-blue: #60a5fa;
+        --secondary-mint: #84e1bc;
+        --background: #f8fafc;
+        --text-dark: #1e293b;
+      }
+      
+      body {
+        font-family: 'Nunito', sans-serif;
+        background-color: var(--background);
+        color: var(--text-dark);
+        overflow-x: hidden;
+      }
+      
+      .flashcard {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 600px;
+        height: 350px;
+        transition: transform 0.6s;
+      }
+      
+      .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-radius: 1rem;
+      }
+      
+      .flipped .card-inner {
+        transform: rotateY(180deg);
+      }
+      
+      .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        border-radius: 1rem;
+        overflow: hidden;
+      }
+      
+      .card-front {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-mint));
+        color: white;
+      }
+      
+      .card-back {
+        background: white;
+        color: var(--text-dark);
+        transform: rotateY(180deg);
+      }
+      
+      .subject-btn {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      
+      .subject-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+      }
+      
+      .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(to right, var(--primary-blue), var(--secondary-mint));
+        transition: width 0.5s ease;
+      }
+      
+      .tutorial-overlay {
+        background-color: rgba(0,0,0,0.75);
+        z-index: 50;
+      }
+      
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #FFC107;
+        border-radius: 50%;
+        animation: fall 3s ease-in-out;
+      }
+      
+      @keyframes fall {
+        0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+      }
+      
+      .nav-btn {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+      }
+      
+      .nav-btn:hover {
+        opacity: 1;
+      }
+      
+      .congratulations {
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      .hide {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm py-4">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-blue-500">Flash<span class="text-green-400">Think</span></h1>
+          <button id="tutorial-btn" class="text-blue-500 hover:text-blue-600 text-sm">
+            <i class="fas fa-question-circle mr-1"></i> Ayuda
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+      
+      <!-- Subject Selection Screen -->
+      <div id="subject-select" class="block">
+        <h2 class="text-2xl font-semibold mb-8 text-center">Selecciona un tema para estudiar</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Math -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="math">
+            <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+              <i class="fas fa-calculator text-blue-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Matemáticas</span>
+          </button>
+          
+          <!-- History -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="history">
+            <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+              <i class="fas fa-landmark text-green-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Historia</span>
+          </button>
+          
+          <!-- Science -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="science">
+            <div class="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+              <i class="fas fa-flask text-purple-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Ciencia</span>
+          </button>
+          
+          <!-- Languages -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="languages">
+            <div class="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
+              <i class="fas fa-language text-yellow-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Idiomas</span>
+          </button>
+          
+          <!-- Geography -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="geography">
+            <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
+              <i class="fas fa-globe-americas text-red-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Geografía</span>
+          </button>
+          
+          <!-- Art -->
+          <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="art">
+            <div class="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+              <i class="fas fa-palette text-pink-500 text-3xl"></i>
+            </div>
+            <span class="text-lg font-semibold">Arte</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Flashcard Screen -->
+      <div id="flashcard-screen" class="hide">
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <h2 id="subject-title" class="text-xl font-semibold">Matemáticas</h2>
+            <div class="text-sm text-gray-500">
+              Tarjeta <span id="current-card">1</span>/<span id="total-cards">10</span>
+            </div>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill" style="width: 10%;"></div>
+          </div>
+          
+          <div class="text-center mt-2">
+            <span id="encouragement" class="text-sm text-blue-500">¡Sigue así!</span>
+          </div>
+        </div>
+        
+        <!-- Flashcard -->
+        <div class="flex justify-center items-center my-8 relative">
+          <button class="nav-btn absolute left-0 z-10 bg-white rounded-full p-3 shadow-md" id="prev-btn">
+            <i class="fas fa-chevron-left text-blue-500"></i>
+          </button>
+          
+          <div class="flashcard mx-4" id="flashcard">
+            <div class="card-inner">
+              <div class="card-front">
+                <h3 id="question" class="text-2xl font-semibold">¿Cuánto es 2+2?</h3>
+              </div>
+              <div class="card-back">
+                <h3 id="answer" class="text-2xl font-semibold">4</h3>
+              </div>
+            </div>
+          </div>
+          
+          <button class="nav-btn absolute right-0 z-10 bg-white rounded-full p-3 shadow-md" id="next-btn">
+            <i class="fas fa-chevron-right text-blue-500"></i>
+          </button>
+        </div>
+        
+        <div class="text-center mt-8">
+          <p class="text-gray-600 text-sm mb-4">Toca la tarjeta para ver la respuesta</p>
+          <button id="back-to-subjects" class="text-blue-500 hover:text-blue-700">
+            <i class="fas fa-arrow-left mr-2"></i> Volver a temas
+          </button>
+        </div>
+      </div>
+      
+      <!-- Congratulations Screen -->
+      <div id="congrats-screen" class="hide flex flex-col items-center justify-center py-16">
+        <div class="text-center congratulations">
+          <h2 class="text-4xl font-bold text-blue-500 mb-4">¡Felicidades!</h2>
+          <p class="text-xl mb-8">Has completado todas las tarjetas de este tema</p>
+          <div class="w-32 h-32 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-8">
+            <i class="fas fa-check text-green-500 text-5xl"></i>
+          </div>
+          <p class="text-lg text-gray-600 mb-8">¡Muy bien! Sigue practicando para mejorar tu aprendizaje</p>
+          <div class="flex justify-center space-x-4">
+            <button id="restart-btn" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg transition-all">
+              <i class="fas fa-redo mr-2"></i> Repasar de nuevo
+            </button>
+            <button id="congrats-back-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-lg transition-all">
+              <i class="fas fa-home mr-2"></i> Volver a temas
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="tutorial-overlay fixed inset-0 flex items-center justify-center hidden">
+      <div class="bg-white rounded-lg max-w-lg w-full p-6 mx-4 relative">
+        <button id="close-tutorial" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+        
+        <h3 class="text-2xl font-bold mb-4 text-blue-500">¿Cómo usar FlashThink?</h3>
+        
+        <div class="space-y-4 text-gray-700">
+          <div class="flex items-start">
+            <div class="bg-blue-100 rounded-full p-2 mr-3 mt-1">
+              <i class="fas fa-hand-point-up text-blue-500"></i>
+            </div>
+            <p>Toca una tarjeta para voltearla y ver la respuesta.</p>
+          </div>
+          
+          <div class="flex items-start">
+            <div class="bg-blue-100 rounded-full p-2 mr-3 mt-1">
+              <i class="fas fa-arrows-alt-h text-blue-500"></i>
+            </div>
+            <p>Desliza o usa las flechas para navegar entre tarjetas.</p>
+          </div>
+          
+          <div class="flex items-start">
+            <div class="bg-blue-100 rounded-full p-2 mr-3 mt-1">
+              <i class="fas fa-chart-line text-blue-500"></i>
+            </div>
+            <p>La barra de progreso muestra tu avance en el tema actual.</p>
+          </div>
+          
+          <div class="flex items-start">
+            <div class="bg-blue-100 rounded-full p-2 mr-3 mt-1">
+              <i class="fas fa-save text-blue-500"></i>
+            </div>
+            <p>Tu progreso se guarda automáticamente para que puedas continuar después.</p>
+          </div>
+        </div>
+        
+        <button id="got-it-btn" class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-all">
+          ¡Entendido!
+        </button>
+      </div>
+    </div>
+    
+    <script id="app-script">
+      document.addEventListener('DOMContentLoaded', () => {
+        // Elements
+        const subjectSelect = document.getElementById('subject-select');
+        const flashcardScreen = document.getElementById('flashcard-screen');
+        const congratsScreen = document.getElementById('congrats-screen');
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        const subjectButtons = document.querySelectorAll('.subject-btn');
+        const backToSubjectsBtn = document.getElementById('back-to-subjects');
+        const congratsBackBtn = document.getElementById('congrats-back-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const flashcard = document.getElementById('flashcard');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const currentCardElement = document.getElementById('current-card');
+        const totalCardsElement = document.getElementById('total-cards');
+        const subjectTitle = document.getElementById('subject-title');
+        const question = document.getElementById('question');
+        const answer = document.getElementById('answer');
+        const encouragement = document.getElementById('encouragement');
+        const tutorialBtn = document.getElementById('tutorial-btn');
+        const closeTutorialBtn = document.getElementById('close-tutorial');
+        const gotItBtn = document.getElementById('got-it-btn');
+        
+        // App state
+        let currentSubject = '';
+        let currentCardIndex = 0;
+        let flashcards = [];
+        
+        // Encouragement phrases
+        const encouragementPhrases = [
+          '¡Sigue así!', 
+          '¡Muy bien!', 
+          '¡Excelente trabajo!', 
+          '¡Vas por buen camino!',
+          '¡Continúa aprendiendo!'
+        ];
+        
+        // Check if it's the first visit
+        const isFirstVisit = !localStorage.getItem('flashthink-visited');
+        if (isFirstVisit) {
+          tutorialOverlay.classList.remove('hidden');
+          localStorage.setItem('flashthink-visited', 'true');
+        }
+        
+        // Simulated flashcard data (to be replaced with API calls)
+        const flashcardData = {
+          math: [
+            { question: '¿Cuánto es 2+2?', answer: '4' },
+            { question: '¿Cuál es la raíz cuadrada de 9?', answer: '3' },
+            { question: '¿Cuánto es 7×8?', answer: '56' },
+            { question: '¿Cuál es el área de un círculo?', answer: 'πr²' },
+            { question: '¿Qué es un número primo?', answer: 'Un número natural mayor que 1 que solo es divisible por 1 y por sí mismo' }
+          ],
+          history: [
+            { question: '¿En qué año comenzó la Segunda Guerra Mundial?', answer: '1939' },
+            { question: '¿Quién pintó la Mona Lisa?', answer: 'Leonardo da Vinci' },
+            { question: '¿En qué año Cristóbal Colón llegó a América?', answer: '1492' },
+            { question: '¿Cómo se llamaba el primer presidente de Estados Unidos?', answer: 'George Washington' },
+            { question: '¿Cuándo cayó el Muro de Berlín?', answer: '9 de noviembre de 1989' }
+          ],
+          science: [
+            { question: '¿Cuál es el elemento químico más abundante en el universo?', answer: 'Hidrógeno' },
+            { question: '¿Cuál es la velocidad de la luz?', answer: '299,792,458 metros por segundo' },
+            { question: '¿Quién descubrió la penicilina?', answer: 'Alexander Fleming' },
+            { question: '¿Qué es la fotosíntesis?', answer: 'Proceso por el cual las plantas convierten la luz solar en energía' },
+            { question: '¿Cuál es el órgano más grande del cuerpo humano?', answer: 'La piel' }
+          ],
+          languages: [
+            { question: '¿Cómo se dice "hola" en francés?', answer: 'Bonjour' },
+            { question: '¿Cómo se dice "gracias" en inglés?', answer: 'Thank you' },
+            { question: '¿Cómo se dice "amor" en italiano?', answer: 'Amore' },
+            { question: '¿Cómo se dice "adiós" en alemán?', answer: 'Auf Wiedersehen' },
+            { question: '¿Cómo se dice "buenos días" en japonés?', answer: 'Ohayō gozaimasu' }
+          ],
+          geography: [
+            { question: '¿Cuál es el río más largo del mundo?', answer: 'El Nilo' },
+            { question: '¿Cuál es el país más grande del mundo?', answer: 'Rusia' },
+            { question: '¿Cuál es la capital de Australia?', answer: 'Canberra' },
+            { question: '¿Cuántos continentes hay?', answer: 'Siete: Asia, África, América del Norte, América del Sur, Antártida, Europa y Oceanía' },
+            { question: '¿Cuál es el océano más grande?', answer: 'Océano Pacífico' }
+          ],
+          art: [
+            { question: '¿Quién pintó "La noche estrellada"?', answer: 'Vincent van Gogh' },
+            { question: '¿Qué artista es conocido por cortar su propia oreja?', answer: 'Vincent van Gogh' },
+            { question: '¿Quién pintó el techo de la Capilla Sixtina?', answer: 'Miguel Ángel' },
+            { question: '¿Qué famoso pintor español creó "Guernica"?', answer: 'Pablo Picasso' },
+            { question: '¿En qué movimiento artístico se destacó Salvador Dalí?', answer: 'Surrealismo' }
+          ]
+        };
+
+        // Function to load subject data
+        function loadSubject(subject) {
+          currentSubject = subject;
+          flashcards = flashcardData[subject];
+          currentCardIndex = 0;
+          
+          // Update UI
+          subjectTitle.textContent = getSubjectTitle(subject);
+          totalCardsElement.textContent = flashcards.length;
+          updateCard();
+          updateProgress();
+          
+          // Show flashcard screen
+          subjectSelect.classList.add('hide');
+          flashcardScreen.classList.remove('hide');
+          congratsScreen.classList.add('hide');
+          
+          // Save to localStorage
+          saveProgress();
+        }
+        
+        function getSubjectTitle(subject) {
+          const titles = {
+            math: 'Matemáticas',
+            history: 'Historia',
+            science: 'Ciencia',
+            languages: 'Idiomas',
+            geography: 'Geografía',
+            art: 'Arte'
+          };
+          return titles[subject] || subject;
+        }
+        
+        // Function to update the current card
+        function updateCard() {
+          if (currentCardIndex >= flashcards.length) {
+            showCongratsScreen();
+            return;
+          }
+          
+          const card = flashcards[currentCardIndex];
+          question.textContent = card.question;
+          answer.textContent = card.answer;
+          currentCardElement.textContent = currentCardIndex + 1;
+          
+          // Reset card flip
+          flashcard.classList.remove('flipped');
+          
+          // Update encouragement text randomly
+          encouragement.textContent = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
+          
+          updateProgress();
+          saveProgress();
+        }
+        
+        // Function to update progress bar
+        function updateProgress() {
+          const progress = ((currentCardIndex + 1) / flashcards.length) * 100;
+          progressFill.style.width = `${Math.min(progress, 100)}%`;
+        }
+        
+        // Function to show congratulations screen
+        function showCongratsScreen() {
+          flashcardScreen.classList.add('hide');
+          congratsScreen.classList.remove('hide');
+          createConfetti();
+        }
+        
+        // Function to create confetti effect
+        function createConfetti() {
+          const colors = ['#FFC107', '#FF5722', '#2196F3', '#4CAF50', '#9C27B0'];
+          for (let i = 0; i < 100; i++) {
+            setTimeout(() => {
+              const confetti = document.createElement('div');
+              confetti.className = 'confetti';
+              confetti.style.left = `${Math.random() * 100}%`;
+              confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+              confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+              document.body.appendChild(confetti);
+              
+              // Remove confetti after animation
+              setTimeout(() => {
+                confetti.remove();
+              }, 5000);
+            }, i * 50);
+          }
+        }
+        
+        // Function to save progress to localStorage
+        function saveProgress() {
+          const progress = {
+            subject: currentSubject,
+            cardIndex: currentCardIndex
+          };
+          localStorage.setItem('flashthink-progress', JSON.stringify(progress));
+        }
+        
+        // Function to load progress from localStorage
+        function loadProgress() {
+          const savedProgress = localStorage.getItem('flashthink-progress');
+          if (savedProgress) {
+            try {
+              const progress = JSON.parse(savedProgress);
+              if (progress.subject && flashcardData[progress.subject]) {
+                currentSubject = progress.subject;
+                currentCardIndex = progress.cardIndex || 0;
+                flashcards = flashcardData[currentSubject];
+                
+                // Update UI
+                subjectTitle.textContent = getSubjectTitle(currentSubject);
+                totalCardsElement.textContent = flashcards.length;
+                updateCard();
+                
+                // Show flashcard screen if there was progress
+                subjectSelect.classList.add('hide');
+                flashcardScreen.classList.remove('hide');
+              }
+            } catch (e) {
+              console.error('Error loading progress', e);
+            }
+          }
+        }
+        
+        // Event Listeners
+        subjectButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const subject = button.getAttribute('data-subject');
+            loadSubject(subject);
+          });
+        });
+        
+        flashcard.addEventListener('click', () => {
+          flashcard.classList.toggle('flipped');
+        });
+        
+        prevBtn.addEventListener('click', () => {
+          if (currentCardIndex > 0) {
+            currentCardIndex--;
+            updateCard();
+          }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+          if (currentCardIndex < flashcards.length - 1) {
+            currentCardIndex++;
+            updateCard();
+          } else {
+            showCongratsScreen();
+          }
+        });
+        
+        backToSubjectsBtn.addEventListener('click', () => {
+          subjectSelect.classList.remove('hide');
+          flashcardScreen.classList.add('hide');
+        });
+        
+        congratsBackBtn.addEventListener('click', () => {
+          subjectSelect.classList.remove('hide');
+          congratsScreen.classList.add('hide');
+        });
+        
+        restartBtn.addEventListener('click', () => {
+          currentCardIndex = 0;
+          congratsScreen.classList.add('hide');
+          flashcardScreen.classList.remove('hide');
+          updateCard();
+        });
+        
+        tutorialBtn.addEventListener('click', () => {
+          tutorialOverlay.classList.remove('hidden');
+        });
+        
+        closeTutorialBtn.addEventListener('click', () => {
+          tutorialOverlay.classList.add('hidden');
+        });
+        
+        gotItBtn.addEventListener('click', () => {
+          tutorialOverlay.classList.add('hidden');
+        });
+        
+        // Handle swipe gestures for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        flashcard.addEventListener('touchstart', e => {
+          touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        flashcard.addEventListener('touchend', e => {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe();
+        });
+        
+        function handleSwipe() {
+          const swipeDistance = touchEndX - touchStartX;
+          if (swipeDistance > 50 && currentCardIndex > 0) {
+            // Swiped right, go to previous card
+            currentCardIndex--;
+            updateCard();
+          } else if (swipeDistance < -50 && currentCardIndex < flashcards.length - 1) {
+            // Swiped left, go to next card
+            currentCardIndex++;
+            updateCard();
+          }
+        }
+        
+        // Key navigation
+        document.addEventListener('keydown', e => {
+          if (flashcardScreen.classList.contains('hide')) return;
+          
+          if (e.key === 'ArrowLeft' && currentCardIndex > 0) {
+            currentCardIndex--;
+            updateCard();
+          } else if (e.key === 'ArrowRight' && currentCardIndex < flashcards.length - 1) {
+            currentCardIndex++;
+            updateCard();
+          } else if (e.key === ' ' || e.key === 'Enter') {
+            flashcard.classList.toggle('flipped');
+          }
+        });
+        
+        // Load any saved progress on startup
+        loadProgress();
+      });
+    </script>
+  </body>
+</html>

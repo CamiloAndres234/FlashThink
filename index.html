@@ -205,8 +205,33 @@
             </div>
             <span class="text-lg font-semibold">Arte</span>
           </button>
-        </div>
+
+          <!-- Economy -->
+        <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="economics">
+          <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+            <i class="fas fa-chart-line text-indigo-500 text-3xl"></i>
+          </div>
+          <span class="text-lg font-semibold">Economía</span>
+        </button>
+        
+        <!-- Music -->
+        <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="music">
+          <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+            <i class="fas fa-music text-blue-900 text-3xl"></i>
+          </div>
+          <span class="text-lg font-semibold">Música</span>
+        </button>
+        
+        <!-- Programming -->
+        <button class="subject-btn flex flex-col items-center bg-white p-6 rounded-xl" data-subject="programming">
+          <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <i class="fas fa-code text-gray-700 text-3xl"></i>
+          </div>
+          <span class="text-lg font-semibold">Programación</span>
+        </button>
       </div>
+    </div>
+      
       
       <!-- Flashcard Screen -->
       <div id="flashcard-screen" class="hide">
@@ -413,6 +438,27 @@
             { question: '¿Quién pintó el techo de la Capilla Sixtina?', answer: 'Miguel Ángel' },
             { question: '¿Qué famoso pintor español creó "Guernica"?', answer: 'Pablo Picasso' },
             { question: '¿En qué movimiento artístico se destacó Salvador Dalí?', answer: 'Surrealismo' }
+          ],
+          economics: [
+            { question: '¿Qué es la inflación?', answer: 'El aumento generalizado y sostenido de los precios de bienes y servicios en una economía durante un período de tiempo.' },
+            { question: '¿Qué significa la sigla PIB?', answer: 'Producto Interno Bruto' },
+            { question: '¿Qué es un arancel?', answer: 'Un impuesto que se aplica a los bienes y servicios importados.' },
+            { question: '¿Quién fue el padre de la economía moderna?', answer: 'Adam Smith' },
+            { question: '¿Qué representa la curva de demanda?', answer: 'La relación entre el precio de un bien y la cantidad demandada.' }
+          ],
+          music: [
+            { question: '¿Cuántas líneas y espacios tiene un pentagrama?', answer: '5 líneas y 4 espacios' },
+            { question: '¿Cuál es el instrumento de cuerda más grande de una orquesta sinfónica?', answer: 'El Contrabajo (o Violone)' },
+            { question: '¿Quién fue el compositor de la Novena Sinfonía?', answer: 'Ludwig van Beethoven' },
+            { question: '¿Qué término italiano significa "muy fuerte"?', answer: 'Fortissimo' },
+            { question: '¿Qué es un acorde?', answer: 'Un conjunto de tres o más notas diferentes que suenan simultáneamente' }
+          ],
+          programming: [
+            { question: '¿Qué significa la sigla HTML?', answer: 'HyperText Markup Language' },
+            { question: '¿Qué es una variable en programación?', answer: 'Un espacio de almacenamiento reservado para guardar datos en la memoria' },
+            { question: '¿Qué es un loop "for"?', answer: 'Una estructura de control de flujo que permite repetir una porción de código un número fijo de veces' },
+            { question: '¿Qué lenguaje se usa principalmente para dar estilos?', answer: 'CSS' },
+            { question: '¿Qué hace la función "console.log" en JavaScript?', answer: 'Muestra un mensaje en la consola del navegador/servidor para depuración' }
           ]
         };
 
@@ -444,7 +490,10 @@
             science: 'Ciencia',
             languages: 'Idiomas',
             geography: 'Geografía',
-            art: 'Arte'
+            art: 'Arte',
+            economics: 'Economía',
+            music: 'Música',
+            programming: 'Programación'
           };
           return titles[subject] || subject;
         }
